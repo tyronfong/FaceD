@@ -41,9 +41,17 @@ def initParameter():
     kernelPixel = 5
     cv2.setTrackbarPos('kernelPixel', 'control panel', 5)
 
+# class HandReco:
+#     def currentGesture(self):
+#         global currentGesture
+#         return currentGesture
+
+
 # ----------parameters in control panel-------------
 global blurX, blurY, threshValue, kernelPixel
 # --------------------------------------------------
+global currentGesture
+currentGesture = 'haha'
 
 create_control_panel()
 initParameter()
@@ -51,6 +59,7 @@ cap = cv2.VideoCapture(1)
 bg_captured = 0
 
 while (cap.isOpened()):
+    fo = open("gesture", "wb")
     ret, img = cap.read()
     if ret:
         img = cv2.flip(img, 1)
@@ -110,16 +119,12 @@ while (cap.isOpened()):
             # dist = cv2.pointPolygonTest(cnt,far,True)
             cv2.line(crop_img, start, end, [0, 255, 0], 2)
             # cv2.circle(crop_img,far,5,[0,0,255],-1)
-        if count_defects == 1:
-            cv2.putText(crop_img, "111111111111", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-        elif count_defects == 2:
-            cv2.putText(crop_img, "222222222222", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-        elif count_defects == 3:
-            cv2.putText(crop_img, "333333333333", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-        elif count_defects == 4:
-            cv2.putText(crop_img, "444444444444", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        if count_defects > 2:
+            cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+            fo.write('handopen')
         else:
-            cv2.putText(crop_img, ">>>>>>>>>>>4", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+            cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+            fo.write('handfist')
         # cv2.imshow('drawing', drawing)
         # cv2.imshow('end', crop_img)
         all_img = np.hstack((drawing, crop_img))
@@ -127,6 +132,7 @@ while (cap.isOpened()):
         interrupt = cv2.waitKey(10)
         if interrupt & 0xFF == ord('q'):
             cv2.destroyAllWindows()
+            fo.close()
             break
         elif interrupt & 0xFF == ord('b'):
             bg_model = cv2.BackgroundSubtractorMOG2(0, 10)
