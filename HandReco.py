@@ -1,6 +1,30 @@
 import cv2
 import numpy as np
 import math
+import urllib2
+import json
+import thread
+import urllib
+
+
+global count
+count = 0
+
+def doPost(gesture):
+    values = {'gesture': gesture}
+    data = urllib.urlencode(values)
+    req = urllib2.Request('http://localhost:8000')
+    # req.add_header('Content-Type', 'application/json')
+    print data
+    response = urllib2.urlopen(req, data)
+
+def postToServer(gesture):
+    global count
+    if count < 8:
+        count += 1
+        return
+    thread.start_new_thread(doPost,(gesture,))
+    count = 0
 
 def remove_bg(frame):
     fg_mask=bg_model.apply(frame)
@@ -59,7 +83,6 @@ cap = cv2.VideoCapture(1)
 bg_captured = 0
 
 while (cap.isOpened()):
-    fo = open("gesture", "wb")
     ret, img = cap.read()
     if ret:
         img = cv2.flip(img, 1)
@@ -121,10 +144,10 @@ while (cap.isOpened()):
             # cv2.circle(crop_img,far,5,[0,0,255],-1)
         if count_defects > 2:
             cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-            fo.write('handopen')
+            postToServer('handopen')
         else:
             cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-            fo.write('handfist')
+            postToServer('handfist')
         # cv2.imshow('drawing', drawing)
         # cv2.imshow('end', crop_img)
         all_img = np.hstack((drawing, crop_img))
@@ -132,7 +155,6 @@ while (cap.isOpened()):
         interrupt = cv2.waitKey(10)
         if interrupt & 0xFF == ord('q'):
             cv2.destroyAllWindows()
-            fo.close()
             break
         elif interrupt & 0xFF == ord('b'):
             bg_model = cv2.BackgroundSubtractorMOG2(0, 10)
