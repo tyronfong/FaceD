@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import math
 import urllib2
-import json
+import time
 import thread
 import urllib
 
@@ -18,13 +18,15 @@ def doPost(gesture):
     print data
     response = urllib2.urlopen(req, data)
 
+
+global startTime
+startTime = time.time()
+
 def postToServer(gesture):
-    global count
-    if count < 8:
-        count += 1
-        return
-    thread.start_new_thread(doPost,(gesture,))
-    count = 0
+    global  startTime
+    if time.time() - startTime > 0.8:
+        startTime = time.time()
+        thread.start_new_thread(doPost,(gesture,))
 
 def remove_bg(frame):
     fg_mask=bg_model.apply(frame)
