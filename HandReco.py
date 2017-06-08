@@ -19,13 +19,15 @@ def doPost(gesture):
     response = urllib2.urlopen(req, data)
 
 
-global startTime
+global startTime, lastStatus
 startTime = time.time()
+lastStatus = 'nothing'
 
 def postToServer(gesture):
-    global  startTime
-    if time.time() - startTime > 0.8:
+    global  startTime, lastStatus
+    if time.time() - startTime > 0.3 and gesture != lastStatus:
         startTime = time.time()
+        lastStatus = gesture
         thread.start_new_thread(doPost,(gesture,))
 
 def remove_bg(frame):
