@@ -4,40 +4,84 @@ import math
 
 def remove_bg(frame):
     fg_mask=bg_model.apply(frame)
-    kernel = np.ones((3,3),np.uint8)
+    kernel = np.ones((kernelPixel,kernelPixel),np.uint8)
     fg_mask=cv2.erode(fg_mask,kernel,iterations = 1)
     frame=cv2.bitwise_and(frame,frame,mask=fg_mask)
+    frame[fg_mask == 0] = (255, 255, 255)
     return frame
 
-cap = cv2.VideoCapture(0)
+def nothing(x):
+    pass
+
+def create_control_panel():
+    cv2.namedWindow('control panel')
+    cv2.createTrackbar('blur', 'control panel', 0, 50, setBlurValue)
+    cv2.createTrackbar('thresh', 'control panel', 0, 255, setThreshValue)
+    cv2.createTrackbar('kernelPixel', 'control panel', 0, 8, setKernelPixel)
+
+def setBlurValue(x):
+    global blurX, blurY
+    blurX = blurY = x if x % 2 == 1 else x + 1
+
+def setThreshValue(x):
+    global threshValue
+    threshValue = x
+
+def setKernelPixel(x):
+    global kernelPixel
+    kernelPixel = x
+
+def initParameter():
+    global blurX, blurY, threshValue, kernelPixel
+    blurX = 35
+    blurY = 35
+    cv2.setTrackbarPos('blur', 'control panel', 35)
+    threshValue = 127
+    cv2.setTrackbarPos('thresh', 'control panel', 127)
+    kernelPixel = 5
+    cv2.setTrackbarPos('kernelPixel', 'control panel', 5)
+
+# ----------parameters in control panel-------------
+global blurX, blurY, threshValue, kernelPixel
+# --------------------------------------------------
+
+create_control_panel()
+initParameter()
+cap = cv2.VideoCapture(1)
 bg_captured = 0
 
 while (cap.isOpened()):
     ret, img = cap.read()
     if ret:
-        cv2.rectangle(img, (300, 300), (100, 100), (0, 255, 0), 0)
-        crop_img = img
+        img = cv2.flip(img, 1)
+        # create rectangle area
+        cv2.rectangle(img, (640, 480), (320, 0), (0, 255, 0), 0)
+        # crop_img = img
+        crop_img = img[0:480, 320:640]
+        cv2.imshow('raw', img)
         if(bg_captured):
             crop_img = remove_bg(crop_img)
             cv2.imshow('front', crop_img)
 
         grey = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
-        value = (35, 35)
-        blurred = cv2.GaussianBlur(grey, value, 0)
-        _, thresh1 = cv2.threshold(blurred, 127, 255,
-                                   cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        blurred = cv2.GaussianBlur(grey, (blurX, blurY), 0)
+        # _, thresh1 = cv2.threshold(blurred, threshValue, 255, cv2.THRESH_BINARY)
+        _, thresh1 = cv2.threshold(blurred, threshValue, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
         cv2.imshow('Thresholded', thresh1)
 
         (version, _, _) = cv2.__version__.split('.')
 
         if version is '3':
-            image, contours, hierarchy = cv2.findContours(thresh1.copy(), \
-                                                          cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            image, contours, hierarchy = cv2.findContours(thresh1.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         elif version is '2':
-            contours, hierarchy = cv2.findContours(thresh1.copy(), cv2.RETR_TREE, \
-                                                   cv2.CHAIN_APPROX_NONE)
+            contours, hierarchy = cv2.findContours(thresh1.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
-        cnt = max(contours, key=lambda x: cv2.contourArea(x))
+        try:
+            cnt = max(contours, key=lambda x: cv2.contourArea(x))
+        except Exception,e:
+            continue
 
         x, y, w, h = cv2.boundingRect(cnt)
         cv2.rectangle(crop_img, (x, y), (x + w, y + h), (0, 0, 255), 0)
@@ -67,20 +111,17 @@ while (cap.isOpened()):
             cv2.line(crop_img, start, end, [0, 255, 0], 2)
             # cv2.circle(crop_img,far,5,[0,0,255],-1)
         if count_defects == 1:
-            cv2.putText(img, "I am Tyron", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+            cv2.putText(crop_img, "111111111111", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         elif count_defects == 2:
-            str = "This is a basic hand gesture recognizer"
-            cv2.putText(img, str, (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+            cv2.putText(crop_img, "222222222222", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         elif count_defects == 3:
-            cv2.putText(img, "This is 4 :P", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+            cv2.putText(crop_img, "333333333333", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         elif count_defects == 4:
-            cv2.putText(img, "Hi!!!", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+            cv2.putText(crop_img, "444444444444", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         else:
-            cv2.putText(img, "Hello World!!!", (50, 50), \
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+            cv2.putText(crop_img, ">>>>>>>>>>>4", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         # cv2.imshow('drawing', drawing)
         # cv2.imshow('end', crop_img)
-        cv2.imshow('Gesture', img)
         all_img = np.hstack((drawing, crop_img))
         cv2.imshow('Contours', all_img)
         interrupt = cv2.waitKey(10)

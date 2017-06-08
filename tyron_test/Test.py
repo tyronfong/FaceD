@@ -8,7 +8,7 @@ def remove_bg(frame):
     frame=cv2.bitwise_and(frame,frame,mask=fg_mask)
     return frame
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 bg_captured = 0
 
 while (cap.isOpened()):
