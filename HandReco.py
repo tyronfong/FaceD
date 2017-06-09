@@ -15,7 +15,7 @@ def doPost(gesture):
     data = urllib.urlencode(values)
     req = urllib2.Request('http://localhost:8000')
     # req.add_header('Content-Type', 'application/json')
-    print data
+    # print data
     response = urllib2.urlopen(req, data)
 
 
@@ -59,6 +59,15 @@ def setKernelPixel(x):
     global kernelPixel
     kernelPixel = x
 
+def dataStreamfilter(count_defects):
+    print count_defects
+    if count_defects > 3:
+        cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        postToServer('handopen')
+    else:
+        cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        postToServer('handfist')
+
 def initParameter():
     global blurX, blurY, threshValue, kernelPixel
     blurX = 35
@@ -94,10 +103,10 @@ while (cap.isOpened()):
         cv2.rectangle(img, (640, 480), (320, 0), (0, 255, 0), 0)
         # crop_img = img
         crop_img = img[0:480, 320:640]
-        cv2.imshow('raw', img)
+        # cv2.imshow('raw', img)
         if(bg_captured):
             crop_img = remove_bg(crop_img)
-            cv2.imshow('front', crop_img)
+            # cv2.imshow('front', crop_img)
 
         grey = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
 
@@ -105,7 +114,7 @@ while (cap.isOpened()):
         # _, thresh1 = cv2.threshold(blurred, threshValue, 255, cv2.THRESH_BINARY)
         _, thresh1 = cv2.threshold(blurred, threshValue, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-        cv2.imshow('Thresholded', thresh1)
+        # cv2.imshow('Thresholded', thresh1)
 
         (version, _, _) = cv2.__version__.split('.')
 
@@ -146,12 +155,7 @@ while (cap.isOpened()):
             # dist = cv2.pointPolygonTest(cnt,far,True)
             cv2.line(crop_img, start, end, [0, 255, 0], 2)
             # cv2.circle(crop_img,far,5,[0,0,255],-1)
-        if count_defects > 2:
-            cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-            postToServer('handopen')
-        else:
-            cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-            postToServer('handfist')
+        dataStreamfilter(count_defects)
         # cv2.imshow('drawing', drawing)
         # cv2.imshow('end', crop_img)
         all_img = np.hstack((drawing, crop_img))
