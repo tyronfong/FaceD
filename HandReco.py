@@ -11,6 +11,10 @@ global count, DEFAULT_KERNELPIXEL
 count = 0
 DEFAULT_KERNELPIXEL = 6
 
+
+global currentGesture
+currentGesture = 'nothing'
+
 global startTime, lastStatus, lastFlip, lastlastFlip
 startTime = time.time()
 lastStatus = 'nothing'
@@ -25,12 +29,12 @@ def doPost(gesture):
     response = urllib2.urlopen(req, data)
 
 def postToServer(gesture):
-    global  startTime, lastStatus
+    global  startTime, lastStatus, currentGesture
     if time.time() - startTime > 0.3 and gesture != lastStatus:
         startTime = time.time()
         lastStatus = gesture
         print str(time.time()) + ' posting ' + gesture
-        cv2.putText(crop_img, gesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        currentGesture = gesture
         thread.start_new_thread(doPost,(gesture,))
 
 def dataStreamfilter(count_defects):
@@ -43,6 +47,8 @@ def dataStreamfilter(count_defects):
 
     if lastFlip == status and lastlastFlip == status:
         postToServer(status)
+
+    cv2.putText(crop_img, currentGesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
 
     lastlastFlip = lastFlip
     lastFlip = status
@@ -95,8 +101,6 @@ def initParameter():
 # ----------parameters in control panel-------------
 global blurX, blurY, threshValue, kernelPixel
 # --------------------------------------------------
-global currentGesture
-currentGesture = 'haha'
 
 create_control_panel()
 initParameter()
