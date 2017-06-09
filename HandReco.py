@@ -30,16 +30,15 @@ def postToServer(gesture):
         startTime = time.time()
         lastStatus = gesture
         print str(time.time()) + ' posting ' + gesture
+        cv2.putText(crop_img, gesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         thread.start_new_thread(doPost,(gesture,))
 
 def dataStreamfilter(count_defects):
     global lastFlip, lastlastFlip
     # print count_defects
     if count_defects > 3:
-        # cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         status = 'handopen'
     else:
-        # cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
         status = 'handfist'
 
     if lastFlip == status and lastlastFlip == status:
