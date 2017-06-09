@@ -10,6 +10,11 @@ import urllib
 global count
 count = 0
 
+global startTime, lastStatus, lastFlip, lastlastFlip
+startTime = time.time()
+lastStatus = 'nothing'
+lastFlip = lastlastFlip = 'handfist'
+
 def doPost(gesture):
     values = {'gesture': gesture}
     data = urllib.urlencode(values)
@@ -18,17 +23,29 @@ def doPost(gesture):
     # print data
     response = urllib2.urlopen(req, data)
 
-
-global startTime, lastStatus
-startTime = time.time()
-lastStatus = 'nothing'
-
 def postToServer(gesture):
     global  startTime, lastStatus
     if time.time() - startTime > 0.3 and gesture != lastStatus:
         startTime = time.time()
         lastStatus = gesture
+        print str(time.time()) + ' posting ' + gesture
         thread.start_new_thread(doPost,(gesture,))
+
+def dataStreamfilter(count_defects):
+    global lastFlip, lastlastFlip
+    # print count_defects
+    if count_defects > 3:
+        # cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        status = 'handopen'
+    else:
+        # cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        status = 'handfist'
+
+    if lastFlip == status and lastlastFlip == status:
+        postToServer(status)
+
+    lastlastFlip = lastFlip
+    lastFlip = status
 
 def remove_bg(frame):
     fg_mask=bg_model.apply(frame)
@@ -58,15 +75,6 @@ def setThreshValue(x):
 def setKernelPixel(x):
     global kernelPixel
     kernelPixel = x
-
-def dataStreamfilter(count_defects):
-    print count_defects
-    if count_defects > 3:
-        cv2.putText(crop_img, "handopen", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-        postToServer('handopen')
-    else:
-        cv2.putText(crop_img, "handfist", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
-        postToServer('handfist')
 
 def initParameter():
     global blurX, blurY, threshValue, kernelPixel
