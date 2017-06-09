@@ -24,7 +24,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         else:
             postvars = {}
         global gesture
-        gesture =postvars.get('gesture', 'nothing')[0]
+        gesture = postvars.get('gesture', 'nothing')[0]
 
         print postvars.get('gesture', 'nothing')[0]
 

@@ -174,6 +174,7 @@ while (cap.isOpened()):
         dataStreamfilter(count_defects)
         # cv2.imshow('drawing', drawing)
         # cv2.imshow('end', crop_img)
+        cv2.imshow('black', drawing)
         all_img = np.hstack((drawing, crop_img))
         cv2.imshow('Contours', all_img)
         interrupt = cv2.waitKey(10)
