@@ -7,8 +7,9 @@ import thread
 import urllib
 
 
-global count
+global count, DEFAULT_KERNELPIXEL
 count = 0
+DEFAULT_KERNELPIXEL = 6
 
 global startTime, lastStatus, lastFlip, lastlastFlip
 startTime = time.time()
@@ -83,8 +84,8 @@ def initParameter():
     cv2.setTrackbarPos('blur', 'control panel', 35)
     threshValue = 127
     cv2.setTrackbarPos('thresh', 'control panel', 127)
-    kernelPixel = 5
-    cv2.setTrackbarPos('kernelPixel', 'control panel', 5)
+    kernelPixel = DEFAULT_KERNELPIXEL
+    cv2.setTrackbarPos('kernelPixel', 'control panel', DEFAULT_KERNELPIXEL)
 
 # class HandReco:
 #     def currentGesture(self):
@@ -100,7 +101,11 @@ currentGesture = 'haha'
 
 create_control_panel()
 initParameter()
-cap = cv2.VideoCapture(1)
+# choose camera
+if cv2.VideoCapture(1).isOpened():
+    cap = cv2.VideoCapture(1)
+else:
+    cap = cv2.VideoCapture(0)
 bg_captured = 0
 
 while (cap.isOpened()):
