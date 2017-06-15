@@ -47,8 +47,7 @@ class HandReco:
             status = 'handfist'
 
         if self.__lastFlip == status and self.__lastlastFlip == status:
-            # self.post_to_server(status)
-            pass
+            self.__post_to_server(status)
 
         cv2.putText(crop_img, self.currentGesture, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
 
