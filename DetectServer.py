@@ -1,12 +1,16 @@
 import cgi
+import logging
 from HandReco import HandReco
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class HTTPHandler(BaseHTTPRequestHandler):
     gesture = "nothing"
     handReco = HandReco()
     handReco.start()
+    logger.info('Hand Recoder started')
 
     def do_GET(self):
         self.protocal_version = 'HTTP/1.1'

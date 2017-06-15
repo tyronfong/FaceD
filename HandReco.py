@@ -3,6 +3,9 @@ import numpy as np
 import math
 import time
 import thread
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class HandReco:
@@ -37,7 +40,7 @@ class HandReco:
         if time.time() - self.__startTime > 0.3 and gesture != self.__lastStatus:
             self.__startTime = time.time()
             self.__lastStatus = gesture
-            print str(time.time()) + ' posting ' + gesture
+            logger.info(str(time.time()) + ' posting ' + gesture)
             self.currentGesture = gesture
 
     def __data_stream_filter(self, count_defects, crop_img):
@@ -81,11 +84,9 @@ class HandReco:
         else:
             cap = cv2.VideoCapture(0)
 
-        count = 1
         while cap.isOpened():
             ret, img = cap.read()
-            print count
-            count += 1
+            logger.info("Got a new frame")
             if ret:
                 img = cv2.flip(img, 1)
                 # create rectangle area
