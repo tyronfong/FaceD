@@ -1,10 +1,12 @@
-import os
 import cgi
+from HandReco import HandReco
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+
 class HTTPHandler(BaseHTTPRequestHandler):
-    global gesture
     gesture = "nothing"
+    handReco = HandReco()
+    handReco.start()
 
     def do_GET(self):
         self.protocal_version = 'HTTP/1.1'
@@ -12,7 +14,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_header("Welcome", "Contect")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(gesture)
+        self.wfile.write(self.handReco.currentGesture)
 
     def do_POST(self):
         ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
@@ -23,8 +25,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
             postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
         else:
             postvars = {}
-        global gesture
-        gesture = postvars.get('gesture', 'nothing')[0]
+
+        self.gesture = postvars.get('gesture', 'nothing')[0]
 
         print postvars.get('gesture', 'nothing')[0]
 
@@ -33,6 +35,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_header("Welcome", "Contect")
         self.end_headers()
         self.wfile.write('OK')
+
 
 def start_server(port):
     http_server = HTTPServer(('', int(port)), HTTPHandler)
